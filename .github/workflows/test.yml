@@ -3,14 +3,14 @@ name: Cypress Tests
 on:
   push:
     branches:
-      - main # Trigger the workflow on pushes to the main branch
+      - main
   pull_request:
     branches:
-      - main # Trigger the workflow on pull requests to the main branch
+      - main
 
 jobs:
   cypress-run:
-    runs-on: ubuntu-latest # Use the latest Ubuntu environment
+    runs-on: ubuntu-latest
 
     steps:
       # Step 1: Check out the repository
@@ -21,12 +21,26 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16 # Specify the Node.js version
+          node-version: 16
 
-      # Step 3: Install dependencies
+      # Step 3: Cache Cypress binary
+      - name: Cache Cypress binary
+        uses: actions/cache@v3
+        id: cypress-cache
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            cypress-${{ runner.os }}-
+
+      # Step 4: Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Run Cypress tests
+      # Step 5: Install Cypress binary (if not cached)
+      - name: Install Cypress binary
+        run: npx cypress install
+
+      # Step 6: Run Cypress tests
       - name: Run Cypress tests
         run: npx cypress run
